@@ -45,6 +45,6 @@ Thumbs.db
 # ==========================================
 # Arquivos Sensíveis (Credenciais/Neon DB)
 # ==========================================
-application-dev.properties
-application-dev.yml
+application.properties
+application.yml
 .env
