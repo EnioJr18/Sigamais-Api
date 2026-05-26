@@ -4,35 +4,27 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "aluno")
+@Table(name = "usuario")
 @Data
-public class Aluno {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Relacionamento 1 para 1 com a tabela de Usuários
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "usuario_id", referencedColumnName = "id")
-    private Usuario usuario;
+    private String nome;
 
     @Column(unique = true)
-    private String matricula;
+    private String cpf;
 
-    private String curso;
+    @Column(unique = true)
+    private String email;
 
-    @Column(name = "renda_familiar")
-    private BigDecimal rendaFamiliar;
-
-    @Column(name = "ano_ingresso")
-    private Integer anoIngresso;
-
-    private String status; // Ex: "ATIVO", "TRANCADO", "EVADIDO"
+    private String senha;
+    private String perfil; // Ex: "ALUNO", "PROFESSOR", "DIRETOR"
 
     @CreationTimestamp
     @Column(name = "criado_em", updatable = false)
