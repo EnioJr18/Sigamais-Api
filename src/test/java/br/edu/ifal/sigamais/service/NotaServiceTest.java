@@ -1,5 +1,6 @@
 package br.edu.ifal.sigamais.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
@@ -64,5 +65,37 @@ public class NotaServiceTest {
         when(notaRepository.findByMatriculaId(matriculaId)).thenReturn(Collections.emptyList());
         boolean resultado = notaService.verificarAprovacaoPorMedia(matriculaId);
         assertFalse(resultado);
+    }
+
+    @Test
+    @DisplayName("Deve retornar risco ALTO quando a média das notas for menor 5.0")
+    void deveRetornarRiscoAltoParaMediaBaixa() {
+        Integer matriculaId = 1;
+        List<Nota> notasRuins = Arrays.asList(
+            new Nota(null, matriculaExemplo, BigDecimal.valueOf(4.0), "AV1"),
+            new Nota(null, matriculaExemplo, BigDecimal.valueOf(4.5), "AV2")
+        );
+
+        when(notaRepository.findByMatriculaId(matriculaId)).thenReturn(notasRuins);
+
+        String risco = notaService.calcularRiscoPorNota(matriculaId);
+
+        assertEquals("ALTO", risco);
+    }
+
+    @Test
+    @DisplayName("Deve retornar risco BAIXO quando a média das notas for maior ou igual a 7.0")
+    void deveRetornarRiscoBaixoParaMediaAlta() {
+        Integer matriculaId = 1;
+        List<Nota> notasBoas = Arrays.asList(
+            new Nota(null, matriculaExemplo, BigDecimal.valueOf(8.5), "AV1"),
+            new Nota(null, matriculaExemplo, BigDecimal.valueOf(9.0), "AV2")
+        );
+
+        when(notaRepository.findByMatriculaId(matriculaId)).thenReturn(notasBoas);
+
+        String risco = notaService.calcularRiscoPorNota(matriculaId);
+
+        assertEquals("BAIXO", risco);
     }
 }

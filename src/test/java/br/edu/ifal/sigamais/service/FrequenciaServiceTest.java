@@ -3,6 +3,7 @@ package br.edu.ifal.sigamais.service;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -83,5 +84,19 @@ public class FrequenciaServiceTest {
         boolean resultado = frequenciaService.verificarReprovacaoPorFalta(matriculaId);
 
         assertFalse(resultado);
+    }
+
+    @Test
+    @DisplayName("Deve retornar risco BAIXO quando o aluno tiver poucas faltas")
+    void deveRetornarRiscoBaixoParaPoucasFaltas() {
+        Integer matriculaId = 1;
+        List<Frequencia> poucasFaltas = List.of(new Frequencia(null, matriculaExemplo, 4));
+
+        when(frequenciaRepository.findByMatriculaId(matriculaId)).thenReturn(poucasFaltas);
+        when(matriculaRepository.findById(matriculaId)).thenReturn(Optional.of(matriculaExemplo));
+
+        String risco = frequenciaService.calcularRiscoPorFalta(matriculaId);
+
+        assertEquals("BAIXO", risco);
     }
 }
