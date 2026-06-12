@@ -1,8 +1,10 @@
 package br.edu.ifal.sigamais.repository;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import br.edu.ifal.sigamais.model.Frequencia;
+import java.util.List;
 
-@Repository
-public class FrequenciaRepository {
-    
+public interface FrequenciaRepository extends JpaRepository<Frequencia, Long> {
+
+    List<Frequencia> findByMatriculaId(Long matriculaId);
 }
