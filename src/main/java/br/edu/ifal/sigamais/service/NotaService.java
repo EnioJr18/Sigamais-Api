@@ -37,7 +37,7 @@ public class NotaService {
         return new NotaResponseDTO(notaSalva.getId(), notaSalva.getMatricula().getId(), notaSalva.getValor(), notaSalva.getTipo());
     }
 
-    public List<NotaResponseDTO> listarNotasPorMatricula(Long matriculaId) {
+    public List<NotaResponseDTO> listarNotasPorMatricula(Integer matriculaId) {
         List<Nota> notas = notaRepository.findByMatriculaId(matriculaId);
 
         return notas.stream()
@@ -45,7 +45,7 @@ public class NotaService {
             .collect(Collectors.toList());
     }
 
-    public boolean verificarAprovacaoPorMedia(Long matriculaId) {
+    public boolean verificarAprovacaoPorMedia(Integer matriculaId) {
         List<Nota> notas = notaRepository.findByMatriculaId(matriculaId);
 
         if (notas.isEmpty()) {
