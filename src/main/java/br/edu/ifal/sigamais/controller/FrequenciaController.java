@@ -32,13 +32,13 @@ public class FrequenciaController {
     }
 
     @GetMapping("/matriculas/{matriculaId}")
-    public ResponseEntity<List<FrequenciaResponseDTO>> listarporMatricula(@PathVariable Long matriculaId) {
+    public ResponseEntity<List<FrequenciaResponseDTO>> listarporMatricula(@PathVariable Integer matriculaId) {
         List<FrequenciaResponseDTO> frequencias = frequenciaService.listarFrequenciaPorMatricula(matriculaId);
         return ResponseEntity.ok(frequencias);
     }
 
     @GetMapping("/matriculas/{matriculaId}/status-reprovacao")
-    public ResponseEntity<Boolean> verificarReprovacaoFalta(@PathVariable Long matriculaId) {
+    public ResponseEntity<Boolean> verificarReprovacaoFalta(@PathVariable Integer matriculaId) {
         boolean reprovado = frequenciaService.verificarReprovacaoPorFalta(matriculaId);
         return ResponseEntity.ok(reprovado);
     }

@@ -32,14 +32,14 @@ public class NotaController {
     }
 
     @GetMapping("/matriculas/{matriculaId}")
-    public ResponseEntity<List<NotaResponseDTO>> listarPorMatricula(@PathVariable Long matriculaId) {
+    public ResponseEntity<List<NotaResponseDTO>> listarPorMatricula(@PathVariable Integer matriculaId) {
         List<NotaResponseDTO> notas = notaService.listarNotasPorMatricula(matriculaId);
         return ResponseEntity.ok(notas);
     }
 
 
     @GetMapping("/matriculas/{matriculaId}/status-media")
-    public ResponseEntity<Boolean> verificarAprovacaoMedia(@PathVariable Long matriculaId) {
+    public ResponseEntity<Boolean> verificarAprovacaoMedia(@PathVariable Integer matriculaId) {
         boolean aprovado = notaService.verificarAprovacaoPorMedia(matriculaId);
         return ResponseEntity.ok(aprovado);
     }
