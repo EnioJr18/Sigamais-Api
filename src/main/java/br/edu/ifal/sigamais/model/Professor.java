@@ -21,4 +21,6 @@ public class Professor {
     @OneToOne
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", nullable = false)
     private Usuario usuario;
+
+    private String titulacao;
 }
