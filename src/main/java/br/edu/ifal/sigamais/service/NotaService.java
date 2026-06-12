@@ -61,4 +61,30 @@ public class NotaService {
 
         return media.compareTo(BigDecimal.valueOf(7.0)) >= 0;
     }
+
+    public String calcularRiscoPorNota(Integer matriculaId) {
+        List<Nota> notas = notaRepository.findByMatriculaId(matriculaId);
+
+        if (notas.isEmpty()) {
+            return "MEDIO";
+        }
+
+        BigDecimal soma = BigDecimal.ZERO;
+        for (Nota nota : notas) {
+            soma = soma.add(nota.getValor());
+        }
+        BigDecimal media = soma.divide(BigDecimal.valueOf(notas.size()), 2, RoundingMode.HALF_UP);
+
+        if (media.compareTo(BigDecimal.valueOf(5.0)) < 0) {
+            return "ALTO";
+        }
+
+        else if (media.compareTo(BigDecimal.valueOf(7.0)) < 0) {
+            return "MEDIO";
+        }
+
+        else {
+            return "BAIXO";
+        }
+    }
 }

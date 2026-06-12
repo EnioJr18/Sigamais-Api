@@ -61,4 +61,32 @@ public class FrequenciaService {
 
         return totalFaltasAcumuladas > limiteFaltasPermitido;
     }
+
+    public String calcularRiscoPorFalta(Integer matriculaId) {
+        List<Frequencia> frequencias = frequenciaRepository.findByMatriculaId(matriculaId);
+
+        int totalFaltasAcumuladas = frequencias.stream()
+            .mapToInt(Frequencia::getFaltas)
+            .sum();
+
+        Matricula matricula = matriculaRepository.findById(matriculaId)
+            .orElseThrow(() -> new RuntimeException("Matrícula não encontrada!"));
+
+        int cargaHorariaTurma = matricula.getTurma().getDisciplina().getCargaHoraria();
+        double limiteFaltasPermitido = cargaHorariaTurma * 0.25;
+
+        if (limiteFaltasPermitido == 0) return "BAIXO";
+
+        double proporcaoGasta = totalFaltasAcumuladas / limiteFaltasPermitido;
+
+        if (proporcaoGasta > 0.8) {
+            return "ALTO";
+        }
+        else if (proporcaoGasta >= 0.5) {
+            return "MEDIO";
+        }
+        else {
+            return "BAIXO";
+        }
+    }
 }
