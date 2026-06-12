@@ -1,6 +1,6 @@
 package br.edu.ifal.sigamais.dto;
 
 public record FrequenciaRequestDTO(
-    Long matriculaId,
+    Integer matriculaId,
     Integer faltas
 ) {}

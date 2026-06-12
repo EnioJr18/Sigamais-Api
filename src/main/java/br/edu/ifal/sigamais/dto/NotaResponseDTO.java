@@ -2,9 +2,9 @@ package br.edu.ifal.sigamais.dto;
 
 import java.math.BigDecimal;
 
-public record NotaResponse(
-    Long id,
-    Long matriculaId,
+public record NotaResponseDTO(
+    Integer id,
+    Integer matriculaId,
     BigDecimal valor,
     String tipo
 ) {}
