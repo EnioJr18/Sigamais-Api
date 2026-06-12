@@ -4,9 +4,13 @@ import br.edu.ifal.sigamais.dto.MatriculaRequestDTO;
 import br.edu.ifal.sigamais.dto.MatriculaResponseDTO;
 import br.edu.ifal.sigamais.exception.LimitesVagasException;
 import br.edu.ifal.sigamais.exception.PreRequisitoNaoAtendidoException;
+import br.edu.ifal.sigamais.exception.RecursoNaoEncontradoException;
+import br.edu.ifal.sigamais.model.Aluno;
+import br.edu.ifal.sigamais.model.Matricula;
+import br.edu.ifal.sigamais.model.Turma;
 import br.edu.ifal.sigamais.repository.AlunoRepository;
-// import br.edu.ifal.sigamais.repository.TurmaRepository; // Descomentar quando o David entregar
-// import br.edu.ifal.sigamais.repository.MatriculaRepository;
+import br.edu.ifal.sigamais.repository.MatriculaRepository;
+import br.edu.ifal.sigamais.repository.TurmaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,29 +19,40 @@ import org.springframework.stereotype.Service;
 public class MatriculaService {
 
     private final AlunoRepository alunoRepository;
-    // private final TurmaRepository turmaRepository;
-    // private final MatriculaRepository matriculaRepository;
+    private final TurmaRepository turmaRepository;
+    private final MatriculaRepository matriculaRepository;
 
     public MatriculaResponseDTO realizarMatricula(MatriculaRequestDTO request) {
 
-        // 1. Aqui faremos a busca do Aluno e da Turma no banco
+        Aluno aluno = alunoRepository.findById(request.alunoId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Aluno não encontrado."));
 
-        // 2. Validação da RN04: Limite de Vagas
-        /*
-        if (turma.getMatriculasAtuais() >= turma.getVagas()) {
+        Turma turma = turmaRepository.findById(request.turmaId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Turma não encontrada."));
+
+        // Validação da RN04: Limite de Vagas
+        long matriculasAtuais = matriculaRepository.countByTurmaId(turma.getId());
+        if (matriculasAtuais >= turma.getVagas()) {
             throw new LimitesVagasException("A turma selecionada não possui vagas disponíveis.");
         }
-        */
 
-        // 3. Validação da RN05: Pré-requisitos
-        /*
-        if (!alunoTemPreRequisito(aluno, turma.getDisciplina())) {
-            throw new PreRequisitoNaoAtendidoException("O aluno não possui o pré-requisito necessário para esta disciplina.");
+        // Validação da RN05: Pré-requisitos (Se a disciplina exigir pré-requisito)
+        if (turma.getDisciplina().getPreRequisito() != null) {
+            boolean jaCursou = matriculaRepository.existsByAlunoIdAndTurmaDisciplinaIdAndStatus(
+                    aluno.getId(), turma.getDisciplina().getPreRequisito().getId(), "APROVADO");
+
+            if (!jaCursou) {
+                throw new PreRequisitoNaoAtendidoException("O aluno não possui o pré-requisito necessário para esta disciplina.");
+            }
         }
-        */
 
-        // 4. Salvar a Matrícula e retornar o DTO de sucesso
+        Matricula matricula = new Matricula();
+        matricula.setAluno(aluno);
+        matricula.setTurma(turma);
+        matricula.setStatus("ATIVA");
 
-        return null; // Placeholder temporário
+        Matricula matriculaSalva = matriculaRepository.save(matricula);
+
+        return new MatriculaResponseDTO(matriculaSalva.getId(), aluno.getMatricula(), turma.getDisciplina().getNome(), "ATIVA");
     }
 }

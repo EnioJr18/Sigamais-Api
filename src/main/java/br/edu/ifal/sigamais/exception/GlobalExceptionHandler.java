@@ -19,4 +19,23 @@ public class GlobalExceptionHandler {
             "erro", ex.getMessage()
         ));
     }
+
+    @ExceptionHandler(LimitesVagasException.class)
+    public ResponseEntity<?> handleLimitesVagas(LimitesVagasException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", 400,
+                "erro", ex.getMessage()
+        ));
+    }
+
+    @ExceptionHandler(PreRequisitoNaoAtendidoException.class)
+    public ResponseEntity<?> handlePreRequisitoNaoAtendido(PreRequisitoNaoAtendidoException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", 400,
+                "erro", ex.getMessage()
+        ));
+    }
 }
+

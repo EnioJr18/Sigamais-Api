@@ -20,6 +20,7 @@ public class Turma {
 
     private String semestre;
     private Integer ano;
+    private Integer vagas;
 
     @ManyToOne
     @JoinColumn(name = "professor_id", nullable = false)
