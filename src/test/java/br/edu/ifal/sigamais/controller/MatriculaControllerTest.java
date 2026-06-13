@@ -62,6 +62,8 @@ class MatriculaControllerTest {
     @Test
     @DisplayName("Deve retornar HTTP 200 e o nível de risco calculado para a matrícula")
     void deveRetornarNivelDeRiscoComSucesso() throws Exception {
+
+
         Mockito.when(analiseRiscoService.analisarRiscoGlobal(1)).thenReturn("ALTO");
 
 
