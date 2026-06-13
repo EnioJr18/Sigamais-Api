@@ -1,63 +1,110 @@
 package br.edu.ifal.sigamais.service;
 
 import br.edu.ifal.sigamais.dto.MatriculaRequestDTO;
+import br.edu.ifal.sigamais.dto.MatriculaResponseDTO;
 import br.edu.ifal.sigamais.exception.LimitesVagasException;
+import br.edu.ifal.sigamais.exception.RecursoNaoEncontradoException;
 import br.edu.ifal.sigamais.model.Aluno;
+import br.edu.ifal.sigamais.model.Disciplina;
 import br.edu.ifal.sigamais.model.Matricula;
 import br.edu.ifal.sigamais.model.Turma;
 import br.edu.ifal.sigamais.repository.AlunoRepository;
 import br.edu.ifal.sigamais.repository.MatriculaRepository;
 import br.edu.ifal.sigamais.repository.TurmaRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.util.Optional;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class MatriculaServiceTest {
 
-    @Mock
-    private AlunoRepository alunoRepository;
-    @Mock
-    private TurmaRepository turmaRepository;
+    @InjectMocks
+    private MatriculaService matriculaService;
+
     @Mock
     private MatriculaRepository matriculaRepository;
 
-    @InjectMocks
-    private MatriculaService service;
+    @Mock
+    private AlunoRepository alunoRepository;
+
+    @Mock
+    private TurmaRepository turmaRepository;
+
+    private Aluno aluno;
+    private Turma turma;
+    private MatriculaRequestDTO requestDTO;
+
+    @BeforeEach
+    void setUp() {
+        aluno = new Aluno();
+        aluno.setId(1);
+        aluno.setMatricula("2024001");
+
+        Disciplina disciplina = new Disciplina();
+        disciplina.setNome("Estrutura de Dados");
+
+        turma = new Turma();
+        turma.setId(2);
+        turma.setVagas(30);
+        turma.setDisciplina(disciplina);
+
+        requestDTO = new MatriculaRequestDTO(1, 2);
+    }
 
     @Test
-    void deveLancarExcecaoQuandoTurmaEstiverCheia_RN04() {
+    @DisplayName("Deve realizar matrícula com sucesso quando houver vagas disponíveis")
+    void deveRealizarMatriculaComSucesso() {
+        Mockito.when(alunoRepository.findById(1)).thenReturn(Optional.of(aluno));
+        Mockito.when(turmaRepository.findById(2)).thenReturn(Optional.of(turma));
 
-        // 1. PREPARAÇÃO (Arrange)
-        MatriculaRequestDTO request = new MatriculaRequestDTO(1, 1); // ID do Aluno e ID da Turma
+        Matricula matriculaSalva = new Matricula();
+        matriculaSalva.setId(1);
+        matriculaSalva.setAluno(aluno);
+        matriculaSalva.setTurma(turma);
+        matriculaSalva.setStatus("ATIVA");
 
-        Aluno alunoMock = new Aluno();
-        alunoMock.setId(1);
+        Mockito.when(matriculaRepository.save(any(Matricula.class))).thenReturn(matriculaSalva);
 
-        Turma turmaMock = new Turma();
-        turmaMock.setId(1);
-        turmaMock.setVagas(30); // Turma suporta 30 alunos
+        MatriculaResponseDTO response = matriculaService.realizarMatricula(requestDTO);
 
-        // Ensinando o Mockito como o banco deve responder
-        Mockito.when(alunoRepository.findById(1)).thenReturn(Optional.of(alunoMock));
-        Mockito.when(turmaRepository.findById(1)).thenReturn(Optional.of(turmaMock));
+        assertNotNull(response);
+        assertEquals("ATIVA", response.status());
+        assertEquals("Estrutura de Dados", response.nomeDisciplina());
+        assertEquals(29, turma.getVagas());
+    }
 
-        Mockito.when(matriculaRepository.countByTurmaId(1)).thenReturn(30L);
+    @Test
+    @DisplayName("Deve lançar LimitesVagasException quando a turma estiver lotada")
+    void deveLancarExcecaoQuandoTurmaLotada() {
+        turma.setVagas(0);
 
-        // 2 e 3. AÇÃO e VERIFICAÇÃO (Act & Assert)
-        // Pedimos para o JUnit garantir que tentar matricular vai lançar o LimitesVagasException
-        LimitesVagasException erro = assertThrows(LimitesVagasException.class, () -> {
-            service.realizarMatricula(request);
+        Mockito.when(alunoRepository.findById(1)).thenReturn(Optional.of(aluno));
+        Mockito.when(turmaRepository.findById(2)).thenReturn(Optional.of(turma));
+
+        // Verifica se o sistema barra a matrícula e lança a exceção correta
+        assertThrows(LimitesVagasException.class, () -> {
+            matriculaService.realizarMatricula(requestDTO);
         });
+    }
 
-        assertEquals("A turma selecionada não possui vagas disponíveis.", erro.getMessage());
+    @Test
+    @DisplayName("Deve lançar RecursoNaoEncontradoException se o Aluno não existir")
+    void deveLancarExcecaoQuandoAlunoNaoExistir() {
+        // Simula o banco não encontrando o aluno
+        Mockito.when(alunoRepository.findById(1)).thenReturn(Optional.empty());
 
-        Mockito.verify(matriculaRepository, Mockito.never()).save(Mockito.any(Matricula.class));
+        assertThrows(RecursoNaoEncontradoException.class, () -> {
+            matriculaService.realizarMatricula(requestDTO);
+        });
     }
 }

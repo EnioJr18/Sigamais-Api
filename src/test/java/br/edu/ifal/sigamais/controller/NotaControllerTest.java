@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -23,10 +24,17 @@ import br.edu.ifal.sigamais.dto.NotaResponseDTO;
 import br.edu.ifal.sigamais.service.NotaService;
 
 @WebMvcTest(NotaController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class NotaControllerTest {
     
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private br.edu.ifal.sigamais.security.TokenService tokenService;
+
+    @MockitoBean
+    private br.edu.ifal.sigamais.repository.UsuarioRepository usuarioRepository;
 
     @MockitoBean
     private NotaService notaService;
