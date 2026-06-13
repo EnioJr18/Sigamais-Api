@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -21,10 +22,17 @@ import br.edu.ifal.sigamais.dto.FrequenciaResponseDTO;
 import br.edu.ifal.sigamais.service.FrequenciaService;
 
 @WebMvcTest(FrequenciaController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class FrequenciaControllerTest {
     
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private br.edu.ifal.sigamais.security.TokenService tokenService;
+
+    @MockitoBean
+    private br.edu.ifal.sigamais.repository.UsuarioRepository usuarioRepository;
 
     @MockitoBean
     private FrequenciaService frequenciaService;
