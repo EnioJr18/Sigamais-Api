@@ -62,10 +62,9 @@ class MatriculaControllerTest {
     @Test
     @DisplayName("Deve retornar HTTP 200 e o nível de risco calculado para a matrícula")
     void deveRetornarNivelDeRiscoComSucesso() throws Exception {
-        // Prepara: Ensina o mock a devolver "ALTO" quando consultarem a matrícula 1
         Mockito.when(analiseRiscoService.analisarRiscoGlobal(1)).thenReturn("ALTO");
 
-        // Executa a requisição GET e verifica
+
         mockMvc.perform(get("/matriculas/1/risco")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // Espera HTTP 200
