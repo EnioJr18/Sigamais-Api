@@ -51,7 +51,7 @@ class AlunoServiceTest {
         alunoSalvo.setMatricula("2024001");
         alunoSalvo.setStatus("ATIVO");
 
-        Mockito.when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioSalvo);
+        Mockito.lenient().when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioSalvo);
         Mockito.when(alunoRepository.save(any(Aluno.class))).thenReturn(alunoSalvo);
 
         AlunoResponseDTO response = alunoService.salvar(requestDTO);
