@@ -22,6 +22,7 @@ public class ProfessorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(dto));
     }
 
+    // Apenas um GET para a rota principal!
     @GetMapping
     public ResponseEntity<List<ProfessorResponseDTO>> listar() {
         return ResponseEntity.ok(service.listarTodos());

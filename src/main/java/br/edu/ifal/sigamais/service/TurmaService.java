@@ -8,6 +8,8 @@ import br.edu.ifal.sigamais.repository.TurmaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TurmaService {
@@ -32,8 +34,12 @@ public class TurmaService {
         turma.setDisciplina(disciplina);
         turma.setSemestre(semestre);
         turma.setAno(ano);
-        
+
         // 4. Salva no banco
         return turmaRepo.save(turma);
+    }
+
+    public List<Turma> listarTodas() {
+        return turmaRepo.findAll();
     }
 }

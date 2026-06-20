@@ -8,6 +8,8 @@ import br.edu.ifal.sigamais.repository.AlunoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AlunoService {
@@ -41,5 +43,17 @@ public class AlunoService {
                 alunoSalvo.getCurso(),
                 alunoSalvo.getStatus()
         );
+    }
+
+    public List<AlunoResponseDTO> listarTodos() {
+        return repository.findAll().stream()
+                .map(a -> new AlunoResponseDTO(
+                        a.getId(),
+                        a.getUsuario().getNome(),
+                        a.getMatricula(),
+                        a.getCurso(),
+                        a.getStatus()
+                ))
+                .toList();
     }
 }

@@ -44,5 +44,11 @@ public class NotaController {
         return ResponseEntity.ok(aprovado);
     }
 
+    @GetMapping
+    public ResponseEntity<List<NotaResponseDTO>> listarTodas() {
+        List<NotaResponseDTO> notas = notaService.listarTodasNotas();
+        return ResponseEntity.ok(notas);
+    }
+
 
 }

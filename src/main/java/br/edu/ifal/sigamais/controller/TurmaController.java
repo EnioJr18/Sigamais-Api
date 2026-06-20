@@ -1,15 +1,15 @@
 package br.edu.ifal.sigamais.controller;
 
+import br.edu.ifal.sigamais.repository.TurmaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import br.edu.ifal.sigamais.model.Turma;
 import br.edu.ifal.sigamais.service.TurmaService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/turmas")
@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 public class TurmaController {
 
     private final TurmaService turmaService;
+
+    private final TurmaRepository turmaRepository;
 
     @PostMapping
     public ResponseEntity<Turma> criarTurma(
@@ -27,5 +29,10 @@ public class TurmaController {
         
         Turma novaTurma = turmaService.salvar(professorId, disciplinaId, semestre, ano);
         return ResponseEntity.status(HttpStatus.CREATED).body(novaTurma);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Turma>> listarTodas() {
+        return ResponseEntity.ok(turmaRepository.findAll());
     }
 }

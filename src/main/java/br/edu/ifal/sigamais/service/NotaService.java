@@ -87,4 +87,12 @@ public class NotaService {
             return "BAIXO";
         }
     }
+
+    public List<NotaResponseDTO> listarTodasNotas() {
+        List<Nota> notas = notaRepository.findAll();
+
+        return notas.stream()
+            .map(nota -> new NotaResponseDTO(nota.getId(), nota.getMatricula().getId(), nota.getValor(), nota.getTipo()))
+            .collect(Collectors.toList());
+    }
 }

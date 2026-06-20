@@ -30,12 +30,16 @@ public class ProfessorService {
         professor.setTitulacao(dto.titulacao());
 
         Professor salvo = professorRepository.save(professor);
-        return new ProfessorResponseDTO(salvo.getId(), salvo.getTitulacao());
+        return new ProfessorResponseDTO(salvo.getId(), usuario.getNome(), salvo.getTitulacao());
     }
 
     public List<ProfessorResponseDTO> listarTodos() {
         return professorRepository.findAll().stream()
-                .map(p -> new ProfessorResponseDTO(p.getId(), p.getTitulacao()))
+                .map(p -> new ProfessorResponseDTO(
+                        p.getId(),
+                        p.getUsuario().getNome(),
+                        p.getTitulacao()
+                ))
                 .toList();
     }
 }

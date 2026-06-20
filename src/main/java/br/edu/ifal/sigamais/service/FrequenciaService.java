@@ -89,4 +89,12 @@ public class FrequenciaService {
             return "BAIXO";
         }
     }
+
+    public List<FrequenciaResponseDTO> listarTodasFrequencias() {
+        List<Frequencia> frequencias = frequenciaRepository.findAll();
+
+        return frequencias.stream()
+            .map(f -> new FrequenciaResponseDTO(f.getId(), f.getMatricula().getId(), f.getFaltas()))
+            .collect(Collectors.toList());
+    }
 }

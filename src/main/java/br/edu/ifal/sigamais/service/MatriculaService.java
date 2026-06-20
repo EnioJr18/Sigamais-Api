@@ -14,6 +14,8 @@ import br.edu.ifal.sigamais.repository.TurmaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MatriculaService {
@@ -54,5 +56,16 @@ public class MatriculaService {
         Matricula matriculaSalva = matriculaRepository.save(matricula);
 
         return new MatriculaResponseDTO(matriculaSalva.getId(), aluno.getMatricula(), turma.getDisciplina().getNome(), "ATIVA");
+    }
+
+    public List<MatriculaResponseDTO> listarMatriculas() {
+        return matriculaRepository.findAll().stream()
+                .map(m -> new MatriculaResponseDTO(
+                        m.getId(),
+                        m.getAluno().getMatricula(),
+                        m.getTurma().getDisciplina().getNome(),
+                        m.getStatus()
+                ))
+                .toList();
     }
 }

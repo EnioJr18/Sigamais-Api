@@ -9,20 +9,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import br.edu.ifal.sigamais.service.MatriculaService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/matriculas")
 @RequiredArgsConstructor
 public class MatriculaController {
 
     private final MatriculaService service;
+    private final AnaliseRiscoService analiseRiscoService;
 
-    @Autowired
-    private AnaliseRiscoService analiseRiscoService;
 
     @PostMapping
     public MatriculaResponseDTO realizarMatricula(@RequestBody MatriculaRequestDTO request) {
         return service.realizarMatricula(request);
     }
+
+    @GetMapping
+    public ResponseEntity<List<MatriculaResponseDTO>> listarMatriculas() {
+        return ResponseEntity.ok(service.listarMatriculas());
+    }
+
 
     @GetMapping("/{id}/risco")
     public ResponseEntity analisarRisco(@PathVariable Integer id) {

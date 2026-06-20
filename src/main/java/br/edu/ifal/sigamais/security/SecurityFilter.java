@@ -27,12 +27,19 @@ public class SecurityFilter extends OncePerRequestFilter {
         var tokenJWT = recuperarToken(request);
 
         if (tokenJWT != null) {
-            var subject = tokenService.getSubject(tokenJWT);
+            try {
+                var subject = tokenService.getSubject(tokenJWT);
+                var usuario = repository.findByEmail(subject);
 
-            var usuario = repository.findByEmail(subject);
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        usuario, null, usuario.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (RuntimeException ex) {
+                // O Spring Security vai barrar a requisição e devolver um 403 pro React automaticamente.
+                System.out.println("Tentativa bloqueada: " + ex.getMessage());
+            }
         }
 
         filterChain.doFilter(request, response);

@@ -45,6 +45,7 @@ public class TokenService {
     }
 
     private Instant gerarDataExpiracao() {
+        // Altere para plusHours(2) para dar 2 horas de validade ao token
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }
 }

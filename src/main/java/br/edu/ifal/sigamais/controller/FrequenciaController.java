@@ -42,4 +42,9 @@ public class FrequenciaController {
         boolean reprovado = frequenciaService.verificarReprovacaoPorFalta(matriculaId);
         return ResponseEntity.ok(reprovado);
     }
+
+    @GetMapping
+    public ResponseEntity<List<FrequenciaResponseDTO>> listarTodos() {
+        return ResponseEntity.ok(frequenciaService.listarTodasFrequencias());
+    }
 }
