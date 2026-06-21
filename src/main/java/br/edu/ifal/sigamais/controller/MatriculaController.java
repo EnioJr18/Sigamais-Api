@@ -1,5 +1,6 @@
 package br.edu.ifal.sigamais.controller;
 
+import br.edu.ifal.sigamais.dto.AlertaRiscoDTO;
 import br.edu.ifal.sigamais.dto.MatriculaRequestDTO;
 import br.edu.ifal.sigamais.dto.MatriculaResponseDTO;
 import br.edu.ifal.sigamais.service.AnaliseRiscoService;
@@ -32,11 +33,9 @@ public class MatriculaController {
 
 
     @GetMapping("/{id}/risco")
-    public ResponseEntity analisarRisco(@PathVariable Integer id) {
-        String nivelRisco = analiseRiscoService.analisarRiscoGlobal(id);
-
-        // Vamos devolver um JSON bonitinho {"risco": "ALTO"} para o React ler fácil
-        return ResponseEntity.ok(java.util.Map.of("risco", nivelRisco));
+    public ResponseEntity<AlertaRiscoDTO> analisarRisco(@PathVariable Integer id) {
+        // Chama o método novo e devolve o DTO completo
+        return ResponseEntity.ok(analiseRiscoService.analisarRiscoMatricula(id));
     }
 }
 
