@@ -3,6 +3,7 @@ package br.edu.ifal.sigamais.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.edu.ifal.sigamais.exception.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
 
 import br.edu.ifal.sigamais.dto.NotaRequestDTO;
@@ -24,8 +25,8 @@ public class NotaService {
     private final MatriculaRepository matriculaRepository;
 
     public NotaResponseDTO cadastrarNota(NotaRequestDTO dto) {
-        Matricula matricula = matriculaRepository.findById(dto.matriculaId())
-            .orElseThrow(() -> new RuntimeException("Matrícula não encontrada!"));
+        var matricula = matriculaRepository.findById(dto.matriculaId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Matrícula não encontrada com o ID: " + dto.matriculaId()));
 
         Nota nota = new Nota();
         nota.setMatricula(matricula);

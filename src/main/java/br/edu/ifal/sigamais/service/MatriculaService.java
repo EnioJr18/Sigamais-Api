@@ -55,16 +55,31 @@ public class MatriculaService {
 
         Matricula matriculaSalva = matriculaRepository.save(matricula);
 
-        return new MatriculaResponseDTO(matriculaSalva.getId(), aluno.getMatricula(), turma.getDisciplina().getNome(), "ATIVA");
+        return new MatriculaResponseDTO(
+                matriculaSalva.getId(),
+                aluno.getId(),
+                aluno.getUsuario().getNome(),
+                aluno.getMatricula(),
+                turma.getId(),
+                turma.getSemestre(),
+                turma.getAno(),
+                turma.getDisciplina().getNome(),
+                turma.getProfessor().getUsuario().getNome()
+        );
     }
 
     public List<MatriculaResponseDTO> listarMatriculas() {
         return matriculaRepository.findAll().stream()
                 .map(m -> new MatriculaResponseDTO(
                         m.getId(),
+                        m.getAluno().getId(),
+                        m.getAluno().getUsuario().getNome(),
                         m.getAluno().getMatricula(),
+                        m.getTurma().getId(),
+                        m.getTurma().getSemestre(),
+                        m.getTurma().getAno(),
                         m.getTurma().getDisciplina().getNome(),
-                        m.getStatus()
+                        m.getTurma().getProfessor().getUsuario().getNome()
                 ))
                 .toList();
     }

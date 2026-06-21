@@ -31,27 +31,25 @@ public class SecurityConfigurations {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
-                    // 1. Rota Pública (Todos podem tentar logar)
+                    // 1. Rota Pública (Todos podem tentar logar e criar o primeiro admin se precisarem)
                     req.requestMatchers(HttpMethod.POST, "/auth/login").permitAll();
+                    req.requestMatchers("/error").permitAll();
 
                     // 2. Rotas da Secretaria / Coordenação (ADMIN)
-                    // Somente eles podem criar (POST), editar (PUT) ou deletar (DELETE) a estrutura acadêmica
-                    req.requestMatchers(HttpMethod.POST, "/alunos/**", "/professores/**", "/turmas/**", "/disciplinas/**", "/matriculas/**").hasRole("ADMIN");
-                    req.requestMatchers(HttpMethod.PUT, "/alunos/**", "/professores/**", "/turmas/**", "/disciplinas/**", "/matriculas/**").hasRole("ADMIN");
-                    req.requestMatchers(HttpMethod.DELETE, "/alunos/**", "/professores/**", "/turmas/**", "/disciplinas/**", "/matriculas/**").hasRole("ADMIN");
+                    // Adicionado o mapeamento duplo: "/rota" e "/rota/**" para o Spring Security 6+ não bloquear a raiz
+                    req.requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/**", "/alunos", "/alunos/**", "/professores", "/professores/**", "/turmas", "/turmas/**", "/disciplinas", "/disciplinas/**", "/matriculas", "/matriculas/**").hasRole("ADMIN");
+                    req.requestMatchers(HttpMethod.PUT, "/usuarios", "/usuarios/**", "/alunos", "/alunos/**", "/professores", "/professores/**", "/turmas", "/turmas/**", "/disciplinas", "/disciplinas/**", "/matriculas", "/matriculas/**").hasRole("ADMIN");
+                    req.requestMatchers(HttpMethod.DELETE, "/usuarios", "/usuarios/**", "/alunos", "/alunos/**", "/professores", "/professores/**", "/turmas", "/turmas/**", "/disciplinas", "/disciplinas/**", "/matriculas", "/matriculas/**").hasRole("ADMIN");
 
                     // 3. Rotas dos Professores (Diário Acadêmico)
-                    // Somente professores (e admins, que herdam a role) podem lançar ou alterar notas e presenças
-                    req.requestMatchers(HttpMethod.POST, "/notas/**", "/frequencias/**").hasRole("PROFESSOR");
-                    req.requestMatchers(HttpMethod.PUT, "/notas/**", "/frequencias/**").hasRole("PROFESSOR");
-                    req.requestMatchers(HttpMethod.DELETE, "/notas/**", "/frequencias/**").hasRole("PROFESSOR");
+                    req.requestMatchers(HttpMethod.POST, "/notas", "/notas/**", "/frequencias", "/frequencias/**").hasRole("PROFESSOR");
+                    req.requestMatchers(HttpMethod.PUT, "/notas", "/notas/**", "/frequencias", "/frequencias/**").hasRole("PROFESSOR");
+                    req.requestMatchers(HttpMethod.DELETE, "/notas", "/notas/**", "/frequencias", "/frequencias/**").hasRole("PROFESSOR");
 
                     // 4. Rotas de Leitura (GET)
-                    // Qualquer usuário que estiver logado (com crachá) pode consultar/listar os dados
                     req.requestMatchers(HttpMethod.GET, "/**").authenticated();
 
                     // 5. Medida de Segurança Final
-                    // Se alguém criar um endpoint novo no futuro e esquecer de mapear, ele nasce trancado.
                     req.anyRequest().authenticated();
                 })
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -71,14 +69,13 @@ public class SecurityConfigurations {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Coloque aqui a URL exata onde o React do David vai rodar
         configuration.setAllowedOrigins(java.util.List.of("http://localhost:5173"));
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Aplica a regra para a API inteira
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }

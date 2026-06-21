@@ -3,6 +3,7 @@ package br.edu.ifal.sigamais.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.edu.ifal.sigamais.exception.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
 
 import br.edu.ifal.sigamais.dto.FrequenciaRequestDTO;
@@ -21,9 +22,10 @@ public class FrequenciaService {
     private final MatriculaRepository matriculaRepository;
 
     public FrequenciaResponseDTO registrarFrequencia(FrequenciaRequestDTO dto) {
-        Matricula matricula = matriculaRepository.findById(dto.matriculaId())
-            .orElseThrow(() -> new RuntimeException("Matrícula não encontrada!"));
-        
+
+        var matricula = matriculaRepository.findById(dto.matriculaId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Matrícula não encontrada com o ID: " + dto.matriculaId()));
+
         Frequencia frequencia = new Frequencia();
         frequencia.setMatricula(matricula);
         frequencia.setFaltas(dto.faltas());
