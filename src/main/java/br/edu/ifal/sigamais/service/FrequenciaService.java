@@ -3,6 +3,7 @@ package br.edu.ifal.sigamais.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.edu.ifal.sigamais.dto.FrequenciaResumoDTO;
 import br.edu.ifal.sigamais.exception.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
 
@@ -98,5 +99,24 @@ public class FrequenciaService {
         return frequencias.stream()
             .map(f -> new FrequenciaResponseDTO(f.getId(), f.getMatricula().getId(), f.getFaltas()))
             .collect(Collectors.toList());
+    }
+
+    public List<FrequenciaResumoDTO> listarResumoFrequencias() {
+        return matriculaRepository.findAll().stream().map(m -> {
+            List<Frequencia> frequencias = frequenciaRepository.findByMatriculaId(m.getId());
+
+            int totalFaltas = frequencias.stream().mapToInt(Frequencia::getFaltas).sum();
+
+            return new FrequenciaResumoDTO(
+                    m.getId(),
+                    m.getAluno().getUsuario().getNome(),
+                    m.getAluno().getMatricula(),
+                    m.getTurma().getDisciplina().getNome(),
+                    m.getTurma().getProfessor().getUsuario().getNome(),
+                    m.getTurma().getSemestre(),
+                    totalFaltas,
+                    frequencias.size()
+            );
+        }).toList();
     }
 }

@@ -1,5 +1,6 @@
 package br.edu.ifal.sigamais.controller;
 
+import br.edu.ifal.sigamais.dto.FrequenciaResumoDTO;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.edu.ifal.sigamais.dto.FrequenciaRequestDTO;
@@ -46,5 +47,10 @@ public class FrequenciaController {
     @GetMapping
     public ResponseEntity<List<FrequenciaResponseDTO>> listarTodos() {
         return ResponseEntity.ok(frequenciaService.listarTodasFrequencias());
+    }
+
+    @GetMapping("/resumo")
+    public ResponseEntity<List<FrequenciaResumoDTO>> listarResumo() {
+        return ResponseEntity.ok(frequenciaService.listarResumoFrequencias());
     }
 }

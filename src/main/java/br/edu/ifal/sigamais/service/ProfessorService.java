@@ -42,7 +42,7 @@ public class ProfessorService {
         Professor salvo = professorRepository.save(professor);
 
         // 3. Devolve a resposta bonitinha
-        return new ProfessorResponseDTO(salvo.getId(), usuario.getNome(), salvo.getTitulacao());
+        return new ProfessorResponseDTO(salvo.getId(), usuario.getNome(), usuario.getEmail(), salvo.getTitulacao());
     }
 
     public List<ProfessorResponseDTO> listarTodos() {
@@ -50,6 +50,7 @@ public class ProfessorService {
                 .map(p -> new ProfessorResponseDTO(
                         p.getId(),
                         p.getUsuario().getNome(),
+                        p.getUsuario().getEmail(),
                         p.getTitulacao()
                 ))
                 .toList();

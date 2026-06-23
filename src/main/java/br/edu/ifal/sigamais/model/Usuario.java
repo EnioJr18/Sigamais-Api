@@ -32,6 +32,12 @@ public class Usuario implements UserDetails {
     private String senha;
     private String perfil; // Ex: "ALUNO", "PROFESSOR", "DIRETOR"
 
+    private String telefone;
+
+    private String endereco;
+
+    private String fotoPerfilUrl;
+
     @CreationTimestamp
     @Column(name = "criado_em", updatable = false)
     private LocalDateTime criadoEm;

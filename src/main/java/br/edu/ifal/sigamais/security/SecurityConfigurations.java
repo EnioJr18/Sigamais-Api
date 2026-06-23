@@ -31,12 +31,18 @@ public class SecurityConfigurations {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
-                    // 1. Rota Pública (Todos podem tentar logar e criar o primeiro admin se precisarem)
+
+                    // 1. Libera o Preflight (OPTIONS) do navegador por precaução
+                    req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
                     req.requestMatchers(HttpMethod.POST, "/auth/login").permitAll();
                     req.requestMatchers("/error").permitAll();
 
+                    // 🚨 A CORREÇÃO: Rotas "Meu Perfil" vêm ANTES das regras de ADMIN.
+                    // Isso permite que Alunos e Professores alterem a própria senha sem serem barrados.
+                    req.requestMatchers("/usuarios/me", "/usuarios/me/**").authenticated();
+
                     // 2. Rotas da Secretaria / Coordenação (ADMIN)
-                    // Adicionado o mapeamento duplo: "/rota" e "/rota/**" para o Spring Security 6+ não bloquear a raiz
                     req.requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/**", "/alunos", "/alunos/**", "/professores", "/professores/**", "/turmas", "/turmas/**", "/disciplinas", "/disciplinas/**", "/matriculas", "/matriculas/**").hasRole("ADMIN");
                     req.requestMatchers(HttpMethod.PUT, "/usuarios", "/usuarios/**", "/alunos", "/alunos/**", "/professores", "/professores/**", "/turmas", "/turmas/**", "/disciplinas", "/disciplinas/**", "/matriculas", "/matriculas/**").hasRole("ADMIN");
                     req.requestMatchers(HttpMethod.DELETE, "/usuarios", "/usuarios/**", "/alunos", "/alunos/**", "/professores", "/professores/**", "/turmas", "/turmas/**", "/disciplinas", "/disciplinas/**", "/matriculas", "/matriculas/**").hasRole("ADMIN");

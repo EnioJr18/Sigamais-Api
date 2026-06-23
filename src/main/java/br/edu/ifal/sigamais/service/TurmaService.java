@@ -36,7 +36,6 @@ public class TurmaService {
         turma.setSemestre(dto.semestre());
         turma.setAno(dto.ano());
 
-        // 4. Agora sim o dto existe e o Java vai parar de reclamar!
         turma.setVagas(dto.vagas());
 
         return turmaRepo.save(turma);

@@ -6,6 +6,7 @@ import br.edu.ifal.sigamais.model.Aluno;
 import br.edu.ifal.sigamais.model.Usuario;
 import br.edu.ifal.sigamais.repository.AlunoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 public class AlunoService {
 
     private final AlunoRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
     public AlunoResponseDTO salvar(AlunoRequestDTO dto) {
 
@@ -22,7 +24,7 @@ public class AlunoService {
         usuario.setNome(dto.nome());
         usuario.setCpf(dto.cpf());
         usuario.setEmail(dto.email());
-        usuario.setSenha(dto.senha());
+        usuario.setSenha(passwordEncoder.encode(dto.senha()));
         usuario.setPerfil("ALUNO");
 
         Aluno aluno = new Aluno();

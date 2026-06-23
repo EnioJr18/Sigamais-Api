@@ -1,5 +1,6 @@
 package br.edu.ifal.sigamais.controller;
 
+import br.edu.ifal.sigamais.dto.NotaResumoDTO;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.edu.ifal.sigamais.dto.NotaRequestDTO;
@@ -48,6 +49,11 @@ public class NotaController {
     public ResponseEntity<List<NotaResponseDTO>> listarTodas() {
         List<NotaResponseDTO> notas = notaService.listarTodasNotas();
         return ResponseEntity.ok(notas);
+    }
+
+    @GetMapping("/resumo")
+    public ResponseEntity<List<NotaResumoDTO>> listarResumo() {
+        return ResponseEntity.ok(notaService.listarResumoNotas());
     }
 
 
