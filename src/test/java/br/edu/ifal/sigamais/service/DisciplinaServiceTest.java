@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,8 +44,51 @@ class DisciplinaServiceTest {
         DisciplinaResponseDTO response = disciplinaService.salvar(requestDTO);
 
         assertNotNull(response);
+        assertEquals(1, response.id());
         assertEquals("Banco de Dados", response.nome());
         assertEquals(60, response.cargaHoraria());
+        Mockito.verify(disciplinaRepository).save(any(Disciplina.class));
+    }
+
+    @Test
+    @DisplayName("Deve listar todas as disciplinas com sucesso")
+    void deveListarTodasAsDisciplinasComSucesso() {
+        Disciplina disciplina1 = new Disciplina();
+        disciplina1.setId(1);
+        disciplina1.setNome("Banco de Dados");
+        disciplina1.setCargaHoraria(60);
+
+        Disciplina disciplina2 = new Disciplina();
+        disciplina2.setId(2);
+        disciplina2.setNome("Programação Orientada a Objetos");
+        disciplina2.setCargaHoraria(80);
+
+        Mockito.when(disciplinaRepository.findAll()).thenReturn(List.of(disciplina1, disciplina2));
+
+        List<DisciplinaResponseDTO> response = disciplinaService.listarTodas();
+
+        assertNotNull(response);
+        assertEquals(2, response.size());
+        assertEquals("Banco de Dados", response.get(0).nome());
+        assertEquals(60, response.get(0).cargaHoraria());
+        assertEquals("Programação Orientada a Objetos", response.get(1).nome());
+        assertEquals(80, response.get(1).cargaHoraria());
+    }
+
+    @Test
+    @DisplayName("Deve tratar erro ao tentar salvar uma disciplina com dados inválidos")
+    void deveLancarExcecaoAoFalharSalvamento() {
+        DisciplinaRequestDTO requestDTO = new DisciplinaRequestDTO(null, -10);
+
+        Mockito.when(disciplinaRepository.save(any(Disciplina.class)))
+               .thenThrow(new RuntimeException("Erro de integridade de dados"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            disciplinaService.salvar(requestDTO);
+        });
+
+        assertEquals("Erro de integridade de dados", exception.getMessage());
+        Mockito.verify(disciplinaRepository).save(any(Disciplina.class));
     }
 
     @Test
@@ -59,6 +103,7 @@ class DisciplinaServiceTest {
         Disciplina resultado = disciplinaService.buscarEntidadePorId(1);
 
         assertNotNull(resultado);
+        assertEquals(1, resultado.getId());
         assertEquals("Engenharia de Software", resultado.getNome());
     }
 
@@ -67,8 +112,10 @@ class DisciplinaServiceTest {
     void deveLancarExcecaoQuandoDisciplinaNaoExistir() {
         Mockito.when(disciplinaRepository.findById(anyInt())).thenReturn(Optional.empty());
 
-        assertThrows(RecursoNaoEncontradoException.class, () -> {
+        RecursoNaoEncontradoException exception = assertThrows(RecursoNaoEncontradoException.class, () -> {
             disciplinaService.buscarEntidadePorId(99);
         });
+
+        assertEquals("Disciplina não encontrada.", exception.getMessage());
     }
 }

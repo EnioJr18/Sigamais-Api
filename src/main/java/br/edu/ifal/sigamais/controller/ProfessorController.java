@@ -3,7 +3,7 @@ package br.edu.ifal.sigamais.controller;
 import br.edu.ifal.sigamais.dto.ProfessorRequestDTO;
 import br.edu.ifal.sigamais.dto.ProfessorResponseDTO;
 import br.edu.ifal.sigamais.service.ProfessorService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +12,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/professores")
+@RequiredArgsConstructor
 public class ProfessorController {
 
-    @Autowired
-    private ProfessorService service;
+    private final ProfessorService service;
 
     @PostMapping
     public ResponseEntity<ProfessorResponseDTO> cadastrar(@RequestBody ProfessorRequestDTO dto) {

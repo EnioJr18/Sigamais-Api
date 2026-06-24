@@ -6,7 +6,6 @@ import br.edu.ifal.sigamais.model.Aluno;
 import br.edu.ifal.sigamais.repository.AlunoRepository;
 import br.edu.ifal.sigamais.service.AlunoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +18,7 @@ public class AlunoController {
 
     private final AlunoService service;
 
-    @Autowired
-    private AlunoRepository alunoRepository;
+    private final AlunoRepository alunoRepository;
 
     @GetMapping
     public ResponseEntity<List<Aluno>> listar() {

@@ -1,50 +1,89 @@
 package br.edu.ifal.sigamais.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import br.edu.ifal.sigamais.exception.RecursoNaoEncontradoException;
+import br.edu.ifal.sigamais.dto.TurmaRequestDTO;
+import br.edu.ifal.sigamais.model.Turma;
+import br.edu.ifal.sigamais.repository.TurmaRepository;
 import br.edu.ifal.sigamais.service.TurmaService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(TurmaController.class)
-@AutoConfigureMockMvc(addFilters = false)
-public class TurmaControllerTest {
+import java.util.List;
 
-    @Autowired
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@ExtendWith(MockitoExtension.class)
+class TurmaControllerTest {
+
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private br.edu.ifal.sigamais.security.TokenService tokenService;
-
-    @MockitoBean
-    private br.edu.ifal.sigamais.repository.UsuarioRepository usuarioRepository;
-
-    @MockitoBean
+    @Mock
     private TurmaService turmaService;
 
-    @Test
-    public void deveRetornarStatus404QuandoProfessorNaoExistir() throws Exception {
-        // Cenário: Mensagem exata que o seu service lança
-        when(turmaService.salvar(any(), any(), any(), any())) // Corrigido de criarTurma para salvar
-            .thenThrow(new RecursoNaoEncontradoException("Professor não encontrado com o ID: 99"));
+    @Mock
+    private TurmaRepository turmaRepository;
 
-        // Ação e Validação
-        mockMvc.perform(post("/api/turmas")
-                .param("professorId", "99")
-                .param("disciplinaId", "1")
-                .param("semestre", "2026.1")
-                .param("ano", "2026"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.erro").value("Professor não encontrado com o ID: 99")); // Valida o campo "erro" do seu curl
+    @InjectMocks
+    private TurmaController turmaController;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(turmaController).build();
+    }
+
+    @Test
+    @DisplayName("POST /turmas - Deve criar turma e retornar status 201 Created")
+    void deveCriarTurmaComSucesso() throws Exception {
+        // Ajuste os parâmetros do construtor do TurmaRequestDTO conforme sua implementação
+        TurmaRequestDTO requestDTO = new TurmaRequestDTO(1, 1, "2026.1", 2026, 40);
+
+        Turma turmaMock = new Turma();
+        turmaMock.setId(1);
+        turmaMock.setSemestre("2026.1");
+        turmaMock.setAno(2026);
+
+        when(turmaService.salvar(any(TurmaRequestDTO.class))).thenReturn(turmaMock);
+
+        mockMvc.perform(post("/turmas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.semestre").value("2026.1"))
+                .andExpect(jsonPath("$.ano").value(2026));
+
+        verify(turmaService, times(1)).salvar(any(TurmaRequestDTO.class));
+    }
+
+    @Test
+    @DisplayName("GET /turmas - Deve listar todas as turmas e retornar status 200 OK")
+    void deveListarTurmasComSucesso() throws Exception {
+        Turma turmaMock = new Turma();
+        turmaMock.setId(1);
+        turmaMock.setSemestre("2026.1");
+
+        when(turmaRepository.findAll()).thenReturn(List.of(turmaMock));
+
+        mockMvc.perform(get("/turmas")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].semestre").value("2026.1"));
+
+        verify(turmaRepository, times(1)).findAll();
     }
 }

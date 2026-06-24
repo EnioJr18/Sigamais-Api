@@ -8,5 +8,6 @@ public record UsuarioPerfilDTO(
         String perfil,
         String telefone,
         String endereco,
-        String fotoPerfilUrl
+        String fotoPerfilUrl,
+        boolean emRisco
 ) {}

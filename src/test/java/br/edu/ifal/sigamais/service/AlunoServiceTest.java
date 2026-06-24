@@ -5,7 +5,6 @@ import br.edu.ifal.sigamais.dto.AlunoResponseDTO;
 import br.edu.ifal.sigamais.model.Aluno;
 import br.edu.ifal.sigamais.model.Usuario;
 import br.edu.ifal.sigamais.repository.AlunoRepository;
-import br.edu.ifal.sigamais.repository.UsuarioRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,11 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,10 +27,10 @@ class AlunoServiceTest {
     private AlunoService alunoService;
 
     @Mock
-    private AlunoRepository alunoRepository;
+    private AlunoRepository repository;
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private PasswordEncoder passwordEncoder;
 
     @Test
     @DisplayName("Deve cadastrar um Aluno e criar seu Usuário com sucesso")
@@ -44,19 +44,73 @@ class AlunoServiceTest {
         Usuario usuarioSalvo = new Usuario();
         usuarioSalvo.setId(1);
         usuarioSalvo.setNome("Enio Jr");
+        usuarioSalvo.setPerfil("ALUNO");
+        usuarioSalvo.setSenha("encoded_password");
 
         Aluno alunoSalvo = new Aluno();
         alunoSalvo.setId(1);
         alunoSalvo.setUsuario(usuarioSalvo);
         alunoSalvo.setMatricula("2024001");
         alunoSalvo.setStatus("ATIVO");
+        alunoSalvo.setCurso("Sistemas de Informação");
 
-        Mockito.lenient().when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioSalvo);
-        Mockito.when(alunoRepository.save(any(Aluno.class))).thenReturn(alunoSalvo);
+        Mockito.when(passwordEncoder.encode("senha123")).thenReturn("encoded_password");
+        Mockito.when(repository.save(any(Aluno.class))).thenReturn(alunoSalvo);
 
         AlunoResponseDTO response = alunoService.salvar(requestDTO);
 
         assertNotNull(response);
         assertEquals("2024001", response.matricula());
+        assertEquals("ATIVO", response.status());
+        assertEquals("Sistemas de Informação", response.curso());
+        assertEquals("Enio Jr", response.nome());
+        
+        Mockito.verify(passwordEncoder).encode("senha123");
+        Mockito.verify(repository).save(any(Aluno.class));
+    }
+
+    @Test
+    @DisplayName("Deve listar todos os alunos com sucesso")
+    void deveListarTodosOsAlunosComSucesso() {
+        Usuario usuarioSalvo = new Usuario();
+        usuarioSalvo.setId(1);
+        usuarioSalvo.setNome("Enio Jr");
+
+        Aluno alunoSalvo = new Aluno();
+        alunoSalvo.setId(1);
+        alunoSalvo.setUsuario(usuarioSalvo);
+        alunoSalvo.setMatricula("2024001");
+        alunoSalvo.setStatus("ATIVO");
+        alunoSalvo.setCurso("Sistemas de Informação");
+
+        Mockito.when(repository.findAll()).thenReturn(List.of(alunoSalvo));
+
+        List<AlunoResponseDTO> response = alunoService.listarTodos();
+
+        assertNotNull(response);
+        assertFalse(response.isEmpty());
+        assertEquals(1, response.size());
+        assertEquals("2024001", response.get(0).matricula());
+        assertEquals("Enio Jr", response.get(0).nome());
+    }
+
+    @Test
+    @DisplayName("Deve tratar erro ao tentar salvar um aluno com dados inválidos ou falha no repositório")
+    void deveLancarExcecaoAoFalharSalvamento() {
+        AlunoRequestDTO requestDTO = new AlunoRequestDTO(
+                "Enio Jr", "123.456.789-00", "enio@ifal.edu.br",
+                "senha123", "2024001", "Sistemas de Informação",
+                BigDecimal.valueOf(2500.0), 2024
+        );
+
+        Mockito.when(passwordEncoder.encode("senha123")).thenReturn("encoded_password");
+        Mockito.when(repository.save(any(Aluno.class))).thenThrow(new RuntimeException("Erro ao acessar banco de dados"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            alunoService.salvar(requestDTO);
+        });
+
+        assertEquals("Erro ao acessar banco de dados", exception.getMessage());
+        Mockito.verify(repository).save(any(Aluno.class));
     }
 }

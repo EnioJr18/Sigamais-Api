@@ -4,59 +4,107 @@ import br.edu.ifal.sigamais.dto.DadosAutenticacao;
 import br.edu.ifal.sigamais.model.Usuario;
 import br.edu.ifal.sigamais.security.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AutenticacaoController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
 class AutenticacaoControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private br.edu.ifal.sigamais.security.TokenService tokenService;
-
-    @MockitoBean
-    private br.edu.ifal.sigamais.repository.UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockitoBean
+    @Mock
     private AuthenticationManager manager;
 
+    @Mock
+    private TokenService tokenService;
+
+    @InjectMocks
+    private AutenticacaoController autenticacaoController;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        // Inicializa o MockMvc de forma isolada
+        mockMvc = MockMvcBuilders.standaloneSetup(autenticacaoController).build();
+    }
+
     @Test
-    void deveRetornarTokenAoLogarComSucesso() throws Exception {
-        DadosAutenticacao dados = new DadosAutenticacao("enio@ifal.edu.br", "123456");
-        String jsonRequest = objectMapper.writeValueAsString(dados);
+    @DisplayName("POST /auth/login - Deve autenticar e retornar 200 OK com o Token JWT")
+    void deveEfetuarLoginComSucesso() throws Exception {
+        // Arrange
+        DadosAutenticacao dadosLogin = new DadosAutenticacao("aluno@ifal.edu.br", "senha123");
 
-        Usuario usuarioFalso = new Usuario();
-        usuarioFalso.setEmail("enio@ifal.edu.br");
+        Usuario usuarioMock = new Usuario();
+        usuarioMock.setId(1);
+        usuarioMock.setEmail("aluno@ifal.edu.br");
+        usuarioMock.setNome("Enio Jr");
 
-        Authentication authFalsa = new UsernamePasswordAuthenticationToken(usuarioFalso, null);
+        // Precisamos mockar a resposta da interface Authentication do Spring Security
+        Authentication authenticationMock = mock(Authentication.class);
 
-        Mockito.when(manager.authenticate(any())).thenReturn(authFalsa);
-        Mockito.when(tokenService.gerarToken(any(Usuario.class))).thenReturn("meu.token.jwt.falso");
+        // Quando o manager tentar autenticar, devolvemos o mock de sucesso
+        when(manager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authenticationMock);
 
+        // Quando o controller pedir o usuário autenticado (getPrincipal), devolvemos nosso usuarioMock
+        when(authenticationMock.getPrincipal()).thenReturn(usuarioMock);
+
+        // Quando pedir para gerar o token, devolvemos uma string falsa
+        when(tokenService.gerarToken(usuarioMock)).thenReturn("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockToken");
+
+        // Act & Assert
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonRequest))
+                        .content(objectMapper.writeValueAsString(dadosLogin)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("meu.token.jwt.falso"));
+                // Ajuste "token" abaixo se o nome do atributo no seu record DadosTokenJWT for diferente
+                .andExpect(jsonPath("$.token").value("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockToken"));
+
+        // Verifica se os métodos foram chamados
+        verify(manager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(tokenService, times(1)).gerarToken(usuarioMock);
+    }
+
+    @Test
+    @DisplayName("POST /auth/login - Deve falhar e repassar exceção se credenciais forem inválidas")
+    void deveFalharComCredenciaisInvalidas() throws Exception {
+        // Arrange
+        DadosAutenticacao dadosLogin = new DadosAutenticacao("aluno@ifal.edu.br", "senha_errada");
+
+        // Quando o manager tentar autenticar uma senha errada, ele dispara uma BadCredentialsException
+        when(manager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("Bad credentials"));
+
+        // Act & Assert
+        Exception exception = assertThrows(Exception.class, () -> {
+            mockMvc.perform(post("/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dadosLogin)));
+        });
+
+        assertInstanceOf(BadCredentialsException.class, exception.getCause());
+
+        // Garante que se a senha for errada, o TokenService NUNCA deve ser chamado
+        verify(tokenService, never()).gerarToken(any(Usuario.class));
     }
 }

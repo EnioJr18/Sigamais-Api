@@ -3,6 +3,7 @@ package br.edu.ifal.sigamais.controller;
 import br.edu.ifal.sigamais.dto.DisciplinaRequestDTO;
 import br.edu.ifal.sigamais.dto.DisciplinaResponseDTO;
 import br.edu.ifal.sigamais.service.DisciplinaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/disciplinas")
+@RequiredArgsConstructor
 public class DisciplinaController {
 
-    @Autowired
-    private DisciplinaService service;
+    private final DisciplinaService service;
 
     @PostMapping
     public ResponseEntity<DisciplinaResponseDTO> cadastrar(@RequestBody DisciplinaRequestDTO dto) {

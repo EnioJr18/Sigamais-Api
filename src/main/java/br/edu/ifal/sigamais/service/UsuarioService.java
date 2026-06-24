@@ -42,6 +42,18 @@ public class UsuarioService {
 
     public UsuarioPerfilDTO obterMeuPerfil() {
         Usuario usuario = getUsuarioLogado();
+        boolean alertaVermelho = false;
+
+        if ("ALUNO".equals(usuario.getPerfil())) {
+            try {
+                alertaVermelho = listarMeusRiscos().stream()
+                        .anyMatch(map -> {
+                            AlertaRiscoDTO riscoDTO = (AlertaRiscoDTO) map.get("risco");
+                            return "ALTO".equals(riscoDTO.risco());
+                        });
+            } catch (Exception e) {
+            }
+        }
 
         return new UsuarioPerfilDTO(
                 usuario.getId(),
@@ -51,7 +63,8 @@ public class UsuarioService {
                 usuario.getPerfil(),
                 usuario.getTelefone(),
                 usuario.getEndereco(),
-                usuario.getFotoPerfilUrl()
+                usuario.getFotoPerfilUrl(),
+                alertaVermelho
         );
     }
 
@@ -233,6 +246,7 @@ public class UsuarioService {
                             "alunoNome", m.getAluno().getUsuario().getNome(),
                             "alunoMatricula", m.getAluno().getMatricula(),
                             "disciplina", m.getTurma().getDisciplina().getNome(),
+                            "semestre", m.getTurma().getSemestre(),
                             "risco", riscoDTO
                     );
                 }).toList();
