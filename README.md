@@ -148,7 +148,7 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar
 
 ## 👨‍💻 Autores
 
-* **Enio Júnior**
+* **Enio Junior**
 * **David Gabriel**
 * **Jean Marcos**
 * **Yury Galvão**
