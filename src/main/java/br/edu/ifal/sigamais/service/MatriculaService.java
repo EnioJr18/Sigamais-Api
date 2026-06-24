@@ -12,6 +12,7 @@ import br.edu.ifal.sigamais.repository.AlunoRepository;
 import br.edu.ifal.sigamais.repository.MatriculaRepository;
 import br.edu.ifal.sigamais.repository.TurmaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -82,5 +83,28 @@ public class MatriculaService {
                         m.getTurma().getProfessor().getUsuario().getNome()
                 ))
                 .toList();
+    }
+
+    public Matricula atualizar(Integer id, MatriculaRequestDTO dto) {
+        Matricula matricula = matriculaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Matrícula não encontrada."));
+
+        Turma novaTurma = turmaRepository.findById(dto.turmaId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Turma não encontrada."));
+
+        matricula.setTurma(novaTurma);
+
+        return matriculaRepository.save(matricula);
+    }
+
+    public void deletar(Integer id) {
+        if (!matriculaRepository.existsById(id)) {
+            throw new IllegalArgumentException("Matrícula não encontrada.");
+        }
+        try {
+            matriculaRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Não é possível excluir esta matrícula.");
+        }
     }
 }

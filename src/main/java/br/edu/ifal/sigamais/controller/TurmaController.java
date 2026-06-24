@@ -4,6 +4,7 @@ import br.edu.ifal.sigamais.dto.TurmaRequestDTO;
 import br.edu.ifal.sigamais.repository.TurmaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import br.edu.ifal.sigamais.model.Turma;
@@ -31,5 +32,20 @@ public class TurmaController {
     @GetMapping
     public ResponseEntity<List<Turma>> listarTodas() {
         return ResponseEntity.ok(turmaRepository.findAll());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Turma> atualizar(@PathVariable Integer id, @RequestBody @Validated TurmaRequestDTO dto) {
+        return ResponseEntity.ok(turmaService.atualizar(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deletar(@PathVariable Integer id) {
+        try {
+            turmaService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

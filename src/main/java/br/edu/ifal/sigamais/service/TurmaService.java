@@ -8,6 +8,7 @@ import br.edu.ifal.sigamais.repository.DisciplinaRepository;
 import br.edu.ifal.sigamais.repository.ProfessorRepository;
 import br.edu.ifal.sigamais.repository.TurmaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +23,6 @@ public class TurmaService {
 
     public Turma salvar(TurmaRequestDTO dto) {
 
-        // 2. Agora você extrai os IDs de dentro do DTO para fazer as buscas
         var professor = profRepo.findById(dto.professorId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Professor não encontrado com o ID: " + dto.professorId()));
 
@@ -54,5 +54,35 @@ public class TurmaService {
                         t.getDisciplina().getNome()
                 ))
                 .toList();
+    }
+
+    public Turma atualizar(Integer id, TurmaRequestDTO dto) {
+        Turma turma = turmaRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada."));
+
+        var professor = profRepo.findById(dto.professorId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Professor não encontrado."));
+
+        var disciplina = discRepo.findById(dto.disciplinaId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Disciplina não encontrada."));
+
+        turma.setProfessor(professor);
+        turma.setDisciplina(disciplina);
+        turma.setSemestre(dto.semestre());
+        turma.setAno(dto.ano());
+        turma.setVagas(dto.vagas());
+
+        return turmaRepo.save(turma);
+    }
+
+    public void deletar(Integer id) {
+        if (!turmaRepo.existsById(id)) {
+            throw new IllegalArgumentException("Turma não encontrada.");
+        }
+        try {
+            turmaRepo.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Não é possível excluir. Existem alunos matriculados nesta turma.");
+        }
     }
 }
