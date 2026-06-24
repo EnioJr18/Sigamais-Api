@@ -1,14 +1,18 @@
 package br.edu.ifal.sigamais.service;
 
 import br.edu.ifal.sigamais.dto.AlertaRiscoDTO;
+import br.edu.ifal.sigamais.dto.HistoricoAlertaDTO;
 import br.edu.ifal.sigamais.model.AlertaRisco;
+import br.edu.ifal.sigamais.model.HistoricoAlertaRisco;
 import br.edu.ifal.sigamais.model.Matricula;
 import br.edu.ifal.sigamais.repository.AlertaRiscoRepository;
+import br.edu.ifal.sigamais.repository.HistoricoAlertaRiscoRepository;
 import br.edu.ifal.sigamais.repository.MatriculaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +22,7 @@ public class AlertaRiscoService {
     private final MatriculaRepository matriculaRepository;
     private final AnaliseRiscoService analiseRiscoService;
     private final EmailService emailService;
+    private final HistoricoAlertaRiscoRepository historicoRepository;
 
     public void notificarCoordenacao(Integer matriculaId) {
         Matricula matricula = matriculaRepository.findById(matriculaId)
@@ -46,6 +51,15 @@ public class AlertaRiscoService {
         alerta.setEmailEnviado(true);
         alerta.setAtualizadoEm(LocalDateTime.now());
         alertaRepository.save(alerta);
+
+        // Cria o registro inicial do histórico
+        HistoricoAlertaRisco historicoInicial = new HistoricoAlertaRisco();
+        historicoInicial.setAlertaRisco(alerta);
+        historicoInicial.setStatus(alerta.getStatus());
+        historicoInicial.setObservacao("Alerta criado automaticamente após risco alto.");
+        historicoInicial.setCriadoEm(LocalDateTime.now());
+        historicoInicial.setResponsavelNome("Sistema"); // Responsável automático
+        historicoRepository.save(historicoInicial);
 
         // 4. Monta o texto do E-mail e dispara
         String nomeAluno = matricula.getAluno().getUsuario().getNome();
@@ -96,5 +110,28 @@ public class AlertaRiscoService {
         alerta.setAtualizadoEm(LocalDateTime.now());
 
         alertaRepository.save(alerta);
+
+        // Adiciona a nova intervenção na linha do tempo
+        HistoricoAlertaRisco novoHistorico = new HistoricoAlertaRisco();
+        novoHistorico.setAlertaRisco(alerta);
+        novoHistorico.setStatus(dto.status());
+        novoHistorico.setObservacao(dto.observacao());
+        novoHistorico.setCriadoEm(LocalDateTime.now());
+
+        // Se quiser, no futuro pode puxar o nome do SecurityContext,
+        novoHistorico.setResponsavelNome("Coordenação Siga+");
+
+        historicoRepository.save(novoHistorico);
+    }
+
+    public List<HistoricoAlertaDTO> listarHistorico(Integer alertaId) {
+        return historicoRepository.findByAlertaRiscoIdOrderByCriadoEmAsc(alertaId).stream()
+                .map(h -> new HistoricoAlertaDTO(
+                        h.getId(),
+                        h.getStatus().name(),
+                        h.getObservacao(),
+                        h.getCriadoEm(),
+                        h.getResponsavelNome()
+                )).toList();
     }
 }

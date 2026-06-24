@@ -2,6 +2,7 @@ package br.edu.ifal.sigamais.controller;
 
 import br.edu.ifal.sigamais.dto.AlertaResponseDTO;
 import br.edu.ifal.sigamais.dto.AtualizarAlertaDTO;
+import br.edu.ifal.sigamais.dto.HistoricoAlertaDTO;
 import br.edu.ifal.sigamais.exception.RecursoNaoEncontradoException;
 import br.edu.ifal.sigamais.model.enums.StatusAlerta;
 import br.edu.ifal.sigamais.service.AlertaRiscoService;
@@ -132,5 +133,26 @@ class AlertaRiscoControllerTest {
             // Em testes standalone sem Advice, o erro propaga encrustado
             assertTrue(e.getCause() instanceof RecursoNaoEncontradoException);
         }
+    }
+
+    @Test
+    @DisplayName("GET /alertas-risco/{id}/historico - Deve retornar 200 OK e a linha do tempo do alerta")
+    void deveVerHistoricoComSucesso() throws Exception {
+        // Arrange
+        HistoricoAlertaDTO historicoMock = new HistoricoAlertaDTO(
+                100, "PENDENTE", "Alerta inicial gerado", LocalDateTime.now(), "Sistema"
+        );
+
+        when(alertaRiscoService.listarHistorico(1)).thenReturn(List.of(historicoMock));
+
+        // Act & Assert
+        mockMvc.perform(get("/alertas-risco/{id}/historico", 1)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(100))
+                .andExpect(jsonPath("$[0].status").value("PENDENTE"))
+                .andExpect(jsonPath("$[0].responsavelNome").value("Sistema"));
+
+        verify(alertaRiscoService, times(1)).listarHistorico(1);
     }
 }

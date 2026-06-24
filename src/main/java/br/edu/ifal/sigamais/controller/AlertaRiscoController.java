@@ -32,4 +32,9 @@ public class AlertaRiscoController {
         alertaRiscoService.atualizarAlerta(id, dto);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<java.util.List<br.edu.ifal.sigamais.dto.HistoricoAlertaDTO>> verHistorico(@PathVariable Integer id) {
+        return ResponseEntity.ok(alertaRiscoService.listarHistorico(id));
+    }
 }
