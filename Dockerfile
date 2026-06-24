@@ -1,17 +1,21 @@
-# Estágio 1: Build (Compila o código usando o Maven)
-FROM maven:3.9.6-eclipse-temurin-25 AS build
+# Estágio 1: Build (Usando JDK 25 e o Maven Wrapper do seu projeto)
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-# Compila o projeto ignorando os testes para ser mais rápido na nuvem
-RUN mvn clean package -DskipTests
 
-# Estágio 2: Run (Roda a aplicação compilada em um servidor Java leve)
-FROM eclipse-temurin:17-jre-alpine
+# Copia os arquivos do Maven Wrapper e as configurações
+COPY mvnw pom.xml ./
+COPY .mvn ./.mvn
+COPY src ./src
+
+# Garante que o script do Maven tem permissão para rodar no Linux do Render
+RUN chmod +x mvnw
+
+# Compila o projeto ignorando os testes
+RUN ./mvnw clean package -DskipTests
+
+# Estágio 2: Run (Usando uma imagem Alpine super leve do Java 25)
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
-# Copia o .jar gerado no estágio anterior
 COPY --from=build /app/target/*.jar app.jar
-# Expõe a porta que o Spring Boot usa por padrão
 EXPOSE 8080
-# Comando para rodar a API
 ENTRYPOINT ["java", "-jar", "app.jar"]
