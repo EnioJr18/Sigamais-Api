@@ -130,9 +130,9 @@ O projeto conta com uma suíte de testes unitários focada no comportamento da c
 
 Para rodar os testes, execute:
 
-    ```bash
-    ./mvnw test
-    ```
+```bash
+./mvnw test
+```
 
 ---
 
