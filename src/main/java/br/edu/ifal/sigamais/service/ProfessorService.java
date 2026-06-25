@@ -7,6 +7,7 @@ import br.edu.ifal.sigamais.model.Usuario; // Certifique-se de importar o Enum/P
 import br.edu.ifal.sigamais.repository.ProfessorRepository;
 import br.edu.ifal.sigamais.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,5 +55,28 @@ public class ProfessorService {
                         p.getTitulacao()
                 ))
                 .toList();
+    }
+
+    public Professor atualizar(Integer id, ProfessorRequestDTO dto) {
+        Professor professor = professorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Professor não encontrado."));
+
+        professor.getUsuario().setNome(dto.nome());
+        professor.getUsuario().setEmail(dto.email());
+        professor.setTitulacao(dto.titulacao());
+
+
+        return professorRepository.save(professor);
+    }
+
+    public void deletar(Integer id) {
+        if (!professorRepository.existsById(id)) {
+            throw new IllegalArgumentException("Professor não encontrado.");
+        }
+        try {
+            professorRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Não é possível excluir. Existem turmas vinculadas a este professor.");
+        }
     }
 }
