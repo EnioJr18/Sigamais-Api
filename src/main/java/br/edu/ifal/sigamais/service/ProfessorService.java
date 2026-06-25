@@ -62,6 +62,7 @@ public class ProfessorService {
                 .orElseThrow(() -> new IllegalArgumentException("Professor não encontrado."));
 
         professor.getUsuario().setNome(dto.nome());
+        professor.getUsuario().setCpf(dto.cpf());
         professor.getUsuario().setEmail(dto.email());
         professor.setTitulacao(dto.titulacao());
 
